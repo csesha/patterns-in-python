@@ -2,6 +2,7 @@ import os
 import itertools
 import copy
 import numpy as np
+import random
 
 ##### This is the main graph class. It contains the methods for creating and 
 ##### minor manipulations of graphs. The creation and edge insertion process creates 
@@ -137,6 +138,69 @@ class graph(object):
                 f_input.write(str(count)+'\n')
             f_input.close()
         return dd 
+
+    def DegreeOrder(self):
+      '''Creates a DAG by imposing an order of vertices based on their degree.'''
+      debug = False
+      core_G = DAG()
+      core_G.top_order = sorted(self.degrees, key=lambda el: self.degrees[el])
+      if debug:
+        print core_G.top_order
+      for source in core_G.top_order:
+        if debug:
+          print "%s: " % source,
+        core_G.vertices.add(source)
+        core_G.adj_list[source] = set()
+        core_G.degrees[source] = 0
+        for node in self.adj_list[source]:
+          if debug:
+            print "%s" % node,
+          if node in core_G.vertices:  # Average case O(1), worse case O(n) 
+            # We already accounted for this edge
+            # (node has higher order than source, so don't add add from higher to lower)
+            if debug:
+              print "(skipping), ",
+            continue
+          else:
+            if debug:
+              print ", ",
+          core_G.adj_list[source].add(copy.deepcopy(node))
+          core_G.degrees[source] += 1
+        if debug:
+          print
+      return core_G
+
+    def Random(self):
+      '''Creates a DAG by imposing a random order to the vertices of the graph.'''
+      debug = False
+      core_G = DAG()
+      # Makes a copy of the set of vertices and turns them into a list
+      core_G.top_order = list(self.vertices)
+      random.shuffle(core_G.top_order)
+      for source in core_G.top_order:
+        if debug:
+          print "%s: " % source,
+        core_G.vertices.add(source)
+        core_G.adj_list[source] = set()
+        core_G.degrees[source] = 0
+        for node in self.adj_list[source]:
+          if debug:
+            print "%s" % node,
+          if node in core_G.vertices:  # Average case O(1), worse case O(n) 
+            # We already accounted for this edge
+            # (node has higher order than source, so don't add add from higher to lower)
+            if debug:
+              print "(skipping), ",
+            continue
+          else:
+            if debug:
+              print ", ",
+          core_G.adj_list[source].add(copy.deepcopy(node))
+          core_G.degrees[source] += 1
+        if debug:
+          print
+      return core_G
+
 
 #### The fun stuff. This computes the core numbers/degeneracy by applying the minimum vertex removal algorithm. Basically, it iteratively removes 
 #### the vertex of minimum degree, till the graph is empty. This leads to an order of vertex removal, say v1, v2, v3,...,vn. The algorithm then
