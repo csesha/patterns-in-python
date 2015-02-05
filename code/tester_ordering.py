@@ -63,8 +63,7 @@ def test_DAGs(gfnames, iterations=1, verbose=False):
   return stats
 
 def main(argv):
-  gfnames = ['../graphs/facebook_combined.txt']
-  #gfnames = ['../graphs/amazon0312.txt', '../graphs/p2p-Gnutella31.txt', '../graphs/facebook_combined.txt', '../graphs/email-Enron.txt']
+  gfnames = ['../graphs/amazon0312.txt', '../graphs/p2p-Gnutella31.txt', '../graphs/facebook_combined.txt', '../graphs/email-Enron.txt']
   stats = test_DAGs(gfnames, verbose=True)
   print json.dumps(stats, indent=2)
 
