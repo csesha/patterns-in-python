@@ -266,6 +266,65 @@ class graph(object):
         return core_G
 
 
+    def DegenOrder(self):
+        n = len(self.vertices)
+        touched = {}                 # Map of touched vertices
+        cur_degs = {}                # Maintains degrees as vertices are processed
+        core_G = DAG()               # This is the DAG that will be output
+        core_G.vertices = set(self.vertices)    # Vertices are the same
+        for node in core_G.vertices: # Initialize adjacency list and degrees of core_G, the output
+            core_G.adj_list[node] = set()
+            core_G.degrees[node] = 0
+
+        deg_list = [set() for _ in range(n)]    # Initialize list, where ith entry is set of deg i vertices
+        min_deg = n       # variable for min degree of graph
+
+       
+        for node in self.vertices:    # Loop over nodes
+            deg = self.degrees[node]      # Get degree of node
+            touched[node] = 0          # Node not yet touched
+            cur_degs[node] = deg       # cur_degs of node just degree
+            deg_list[deg].add(node)    # Update deg_list with node
+            if deg < min_deg:          # Update min_deg
+                min_deg = deg
+
+        # At this stage, deg_list[d] is the list of vertices of degree d
+
+        for i in range(n):        # The main loop, just going n times
+                                  
+            # We first need the vertex of minimum degree. Due to the looping and deletion of vertex, we may have exhaused
+            # all vertices of minimum degree. We need to update the minimum degree
+
+            while len(deg_list[min_deg]) == 0:  # update min_deg to reach non-empty set
+                min_deg = min_deg+1
+                
+            source = deg_list[min_deg].pop()    # get vertex called "source" with minimum degree 
+            core_G.top_order.append(source)     # append to this to topological ordering
+            touched[source] = 1                 # source has been touched
+            
+            # We got the vertex of the ordering! All we need to do now is "delete" vertex from the graph,
+            # and update deg_list appropriately.
+
+            for node in self.adj_list[source]: # loop over nbrs of source, each nbr called "node"
+                
+                if touched[node] == 1:         # if node has been touched, do nothing
+                    continue 
+ 
+                # We update deg_list
+                deg = cur_degs[node]           # degree of node
+                deg_list[deg].remove(node)      # move node in deg_list, decreasing its degree by 1
+                deg_list[deg-1].add(node)
+                if deg-1 < min_deg:             # update min_deg in case node has lower degree
+                    min_deg = deg-1
+                cur_degs[node] = deg-1          # decrement cur_deg because it has another touched neighbor
+
+                core_G.adj_list[source].add(node) # Add directed edge (source,node) to output DAG core_G
+                core_G.degrees[source] += 1       # Update the degree of source
+                
+        return core_G
+
+
+
 #### The DAG class is inherited from the graph class, and the only difference is an additional topological ordering.
 #### For outputting into a file, we print the vertices in topological order, so we redefine output.
 
