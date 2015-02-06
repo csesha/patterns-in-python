@@ -170,7 +170,7 @@ class graph(object):
           print
       return core_G
 
-    def Random(self):
+    def RandomOrder(self):
       '''Creates a DAG by imposing a random order to the vertices of the graph.'''
       debug = False
       core_G = DAG()
