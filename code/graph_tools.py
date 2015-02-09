@@ -1,5 +1,5 @@
 import os
-import itertools
+import re
 import copy
 import numpy as np
 import random
@@ -82,17 +82,17 @@ class graph(object):
 ####
  
     def Read_edges(self,fname,sep=None):
-        f_input = open(fname,'r')        # Open file
-        list_edges = f_input.readlines() # Read lines as list
+        num_edges = 0
+        with open(fname, 'r') as f_input: # Open file
+            for line in f_input: # Read line by line. This is more memory efficient, but might be slower
+                line = line.strip() # Remove whitespace from edge
+                if not line.startswith('#'): # Skip comments
+                    tokens = re.split(sep or '\s+', line.strip(), 1)
+                    if len(tokens) >= 2:
+                        self.Add_und_edge(tokens[0],tokens[1])
+                        num_edges += 1
+        print('raw edges =', num_edges)    # Print number of lines in file
 
-        print('raw edges =',len(list_edges))    # Print number of lines in file
-        for each_edge in list_edges:             # Loop of each line/edge
-            edge = each_edge.strip()             # Remove whitespace from edge
-            if len(edge) == 0:                   # If empty line, move to next line
-                continue
-            tokens = edge.split(sep)        # Split by sep to get tokens (nodes)
-
-            self.Add_und_edge(tokens[0],tokens[1]) # Add undirected edge given by first two tokens
 
 #### Give the size of the graph. Outputs [vertices (sum of degrees) wedges]
 #### Note that sum of degrees is twice the number of edges in the undirected case 
