@@ -27,6 +27,7 @@ class graph(object):
         self.adj_list = dict()   # Initial adjacency list is empty dictionary 
         self.vertices = set()    # Vertices are stored in a set   
         self.degrees = dict()    # Degrees stored as dictionary
+        self.colors = dict()     # Colors assigned to each node in the graph
 
 #### Checks if (node1, node2) is edge of graph. Output is 1 (yes) or 0 (no).
 ####
