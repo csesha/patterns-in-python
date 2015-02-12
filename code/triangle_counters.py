@@ -21,3 +21,34 @@ def wedge_enum(G):
     return closed
 
 
+#### edge_iter(G) performs simple edge iteration by looping over all edges (u,v), and basically
+#### doing a list join for the neighbors of u and v (given by their adjacency lists)
+#### increments common neighbor counter
+def edge_iter(G):
+	common_neighbor_count = 0    #Initialize count of common neighbors to 0
+	edge_set = get_edge_set(G)   #get edges of graph as a set
+	adj = G.adj_list              
+
+	for edge in edge_set:        #Loop over edges (u,v)
+		node1 = edge[0]
+		node2 = edge[1]
+
+		neighbor_intersection = set(adj[node1]) & set(adj[node2])     #represent adjacency lists of u and v as sets and take set intersection
+		intersect_count = len(neighbor_intersection)                   #num triangles is then num common neighbors of u,v
+
+		common_neighbor_count += intersect_count                       #increment count
+
+	return common_neighbor_count
+
+
+#### method to convert adjacency list into set of edges
+
+def get_edge_set(G):
+	edge_set = set()
+
+	for node1 in G.adj_list:
+		for node2 in G.adj_list[node1]:
+			if not (node2, node1) in edge_set:
+				edge_set.add((node1, node2))
+
+	return edge_set
