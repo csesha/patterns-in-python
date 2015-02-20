@@ -4,6 +4,7 @@ import numpy as np
 import scipy.misc as scm
 import wedge_sampler as wg
 import operator
+import datetime
 
 ##### Compute the cc(d)/cc/transitivity of a graph by wedge sampling
 #####
@@ -114,7 +115,7 @@ def transitivity(G, sample_size):
             continue
 
         deg_table.append((sum_wedges, node1))
-        sum_wedges +=  round(scm.comb(deg, 2, exact=False))
+        sum_wedges +=  deg*(deg-1)/2
 
     # sampling starts here
     # at each iteration, select a vertex v with probability prop. to (deg(v) choose 2)
