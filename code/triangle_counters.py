@@ -23,7 +23,37 @@ def wedge_enum(G, wedges=False):
     if wedges:
       return (closed, wedge_cnt)
     return closed
-<<<<<<< HEAD
+
+### triangle_info(DAG) does a simple wedge enumeration by looping over the adjacency list of all vertices.
+#### It counts the number of triangles incident to each vertex and edge. 
+#### The input should be a DAG to prevent overcounting of triangles.
+#### 
+#### The output is two dictionaries. The first gives the number of triangles incident to each vertex. The second
+#### gives the number of triangles incident to each (directed) edge.
+
+def triangle_info(DAG):
+    tri_vertex = {}         # Output structures
+    tri_edge = {}
+
+    for node in DAG.vertices:
+        tri_vertex[node] = 0   # Initialize for each vertex
+        for nbr in DAG.adj_list[node]:
+            tri_edge[(node,nbr)] = 0    # Initialize for each edge, note each edge is tuple with lower vertex first
+            tri_edge[(nbr,node)] = 0    # Initialize for each edge, note each edge is tuple with lower vertex first
+
+    for node1 in DAG.vertices:     # Loop over all nodes
+        for (node2, node3) in itertools.combinations(DAG.adj_list[node1],2):    #Loop over all pairs of neighbors of node1
+            if DAG.isEdge(node2,node3):    # If (node2, node3) form an edge
+                tri_vertex[node1] += 1       # Increment all triangle counts
+                tri_vertex[node2] += 1
+                tri_vertex[node3] += 1
+                tri_edge[(node1,node2)] += 1
+                tri_edge[(node1,node3)] += 1
+                tri_edge[(node2,node3)] += 1
+                tri_edge[(node2,node1)] += 1
+                tri_edge[(node3,node1)] += 1
+                tri_edge[(node3,node2)] += 1
+    return [tri_vertex, tri_edge]
 
 
 #### edge_iter(G) performs simple edge iteration by looping over all edges (u,v), and basically
@@ -57,5 +87,3 @@ def get_edge_set(G):
 				edge_set.add((node1, node2))
 
 	return edge_set
-=======
->>>>>>> 387b2dadd656f1f53f7e5d0bf06b843694a37125
