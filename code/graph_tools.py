@@ -88,7 +88,7 @@ class graph(object):
             for line in f_input: # Read line by line. This is more memory efficient, but might be slower
                 line = line.strip() # Remove whitespace from edge
                 if not line.startswith('#'): # Skip comments
-                    tokens = re.split(sep or '\s+', line.strip(), 1)
+                    tokens = re.split(sep or '\s+', line.strip())
                     if len(tokens) >= 2:
                         self.Add_und_edge(tokens[0],tokens[1])
                         num_edges += 1
