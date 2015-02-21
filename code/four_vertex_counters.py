@@ -1,7 +1,7 @@
 import itertools
 import sys
 import triangle_counters
-
+import numpy as np
 
 ##### This file contains functions to count all 4-vertex patterns in a graph.
 ##### 
@@ -24,12 +24,12 @@ def four_vertex_count(G):
  
     triangle = sum(tri_info[0].values())/3     # Sum of per-vertex triangle counts is 3 times the total triangle count
     
-    star_3 = 0
-    path_3 = 0
-    tailed_triangle = 0
-    cycle_4 = 0
-    chordal_cycle = 0
-    clique_4 = 0
+    star_3 = 0.0
+    path_3 = 0.0
+    tailed_triangle = 0.0
+    cycle_4 = 0.0
+    chordal_cycle = 0.0
+    clique_4 = 0.0
     
     debug = 0
      
@@ -58,6 +58,14 @@ def four_vertex_count(G):
 
     # The directed interpretation of Chiba-Nishizeki: for each (u,v), count the number of out wedges and in-out wedges with ends (u,v)
 
+    # There are 3-types of directed 4-cycles
+    type1 = 0.0
+    type2 = 0.0
+    type3 = 0.0
+
+    outout = 0.0
+    inout = 0.0
+
     for node in DG.vertices:
         # First we index out-out wedges centered at node
         for (nbr1, nbr2) in itertools.combinations(DG.adj_list[node],2):    #Loop over all pairs of neighbors of node1
@@ -71,61 +79,54 @@ def four_vertex_count(G):
             if (nbr1,nbr2) in wedge_outout:    # If (nbr1,nbr2) already seen, increment wedge count
                 wedge_outout[(nbr1,nbr2)] += 1
             else:
+                outout += 1
                 wedge_outout[(nbr1,nbr2)] = 1  # Else initialize wedge count to 1
 
-        # print(wedge_inout)
-        # Next we index in-out wedges centered at node
+    print('Out-out pairs = ',outout)
 
+    for node in DG.vertices:
+        endpoints = {}
         for nbr1 in DG.adj_list[node]:
-            
-            if debug:
-                print(node,nbr1)
-            for nbr2 in DG.in_list[node]:    # Loop over one in-neighbor and one out-neighbor
-                if debug:
-                    print(node, nbr1, nbr2)
-                tmp1 = nbr1
-                tmp2 = nbr2
-                if tmp1 > tmp2:     # If nbr1 > nbr2, swap, so that nbr1 \leq nbr2
-                    swap = tmp1
-                    tmp1 = tmp2
-                    tmp2 = swap
-
-                if (tmp1,tmp2) in wedge_inout:  # If (nbr1,nbr2) already seen, increment wedge count
-                    wedge_inout[(tmp1,tmp2)] += 1
+            for nbr2 in DG.adj_list[nbr1]:       # Get in-out wedge with source at node
+                inout += 1
+                if nbr2 in endpoints:
+                    endpoints[nbr2] += 1
                 else:
-                    wedge_inout[(tmp1,tmp2)] = 1   # Else initialize wedge count to 1
+                    inout += 1
+                    endpoints[nbr2] = 1
 
-    print('Hashed all out-out and in-out wedges')
+        for v in endpoints:
+            count = endpoints[v]
+            type2 += count*(count-1)/2
+
+            v1 = node
+            v2 = v
+
+            if v1 > v2:
+                swp = v1
+                v1 = v2
+                v2 = swp
+
+            if (v1,v2) in wedge_outout:
+                type3 += count*wedge_outout[(v1,v2)]
+
+    print('In-out pairs =',inout)
+
     if debug:
         print(wedge_inout)
         print(wedge_outout)
 
-    # There are 3-types of directed 4-cycles
-    type1 = 0
-    type2 = 0
-    type3 = 0
-
-    outout = 0
-    inout = 0
     for pair in wedge_outout:       # Loop over all pairs in wedge_outout
         outout += 1
         count = wedge_outout[pair]  
         type1 += count*(count-1)/2  # Number of type1 4-cycles hinged at (u,v) = {W^{++}_{u,v} \choose 2}
 
-        if pair in wedge_inout:     # Check if pair creates type3 4-cycle
-            type3 += count*wedge_inout[pair]
-
-    for pair in wedge_inout:    # Loop over all pairs in wedge_inout
-        inout += 1
-        count = wedge_inout[pair]
-        type2 += count*(count-1)/2 # Number of type2 4-cycles hinged at (u,v) = {W^{+-}_{u,v} \choose 2}
-
     cycle_4 = type1 + type2 + type3
 
-    print('Computed 4-cycle count. Out-out non-zero pairs =',outout,', In-out non-zero pairs = ',inout)
+    print('Computed 4-cycle count')
 
 
-    clique_work = 0
+    clique_work = 0.0
     for node in DG.vertices:        # Loop over nodes
         nbrs = DG.adj_list[node]
         nbrs_info = []
@@ -153,6 +154,12 @@ def four_vertex_count(G):
 
     print('Got cliques. Searched over',clique_work,'tuples')
 
-    return [star_3, path_3, tailed_triangle, cycle_4, chordal_cycle, clique_4]
+    transform = np.matrix('1 0 1 0 2 4; 0 1 2 4 6 12; 0 0 1 0 4 12; 0 0 0 1 1 3; 0 0 0 0 1 6; 0 0 0 0 0 1')    
+
+    non_induced_counts = [star_3, path_3, tailed_triangle, cycle_4, chordal_cycle, clique_4]
+
+    print(non_induced_counts)
+
+    return np.linalg.solve(transform,non_induced_counts)
 
 
