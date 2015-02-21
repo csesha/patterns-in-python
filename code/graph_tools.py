@@ -324,6 +324,83 @@ class graph(object):
                 
         return core_G
 
+    def DegenOrdering(self):
+        n = len(self.vertices)
+        touched = {}                 # Map of touched vertices
+        cur_degs = {}                # Maintains degrees as vertices are processed
+        top_order = []               # Topological ordering
+
+        deg_list = [set() for _ in range(n)]    # Initialize list, where ith entry is set of deg i vertices
+        min_deg = n       # variable for min degree of graph
+
+       
+        for node in self.vertices:    # Loop over nodes
+            deg = self.degrees[node]      # Get degree of node
+            touched[node] = 0          # Node not yet touched
+            cur_degs[node] = deg       # cur_degs of node just degree
+            deg_list[deg].add(node)    # Update deg_list with node
+            if deg < min_deg:          # Update min_deg
+                min_deg = deg
+
+        # At this stage, deg_list[d] is the list of vertices of degree d
+
+        for i in range(n):        # The main loop, just going n times
+                                  
+            # We first need the vertex of minimum degree. Due to the looping and deletion of vertex, we may have exhaused
+            # all vertices of minimum degree. We need to update the minimum degree
+
+            while len(deg_list[min_deg]) == 0:  # update min_deg to reach non-empty set
+                min_deg = min_deg+1
+                
+            source = deg_list[min_deg].pop()    # get vertex called "source" with minimum degree 
+            top_order.append(source)     # append to this to topological ordering
+            touched[source] = 1                 # source has been touched
+            
+            # We got the vertex of the ordering! All we need to do now is "delete" vertex from the graph,
+            # and update deg_list appropriately.
+
+            for node in self.adj_list[source]: # loop over nbrs of source, each nbr called "node"
+                
+                if touched[node] == 1:         # if node has been touched, do nothing
+                    continue 
+ 
+                # We update deg_list
+                deg = cur_degs[node]           # degree of node
+                deg_list[deg].remove(node)      # move node in deg_list, decreasing its degree by 1
+                deg_list[deg-1].add(node)
+                if deg-1 < min_deg:             # update min_deg in case node has lower degree
+                    min_deg = deg-1
+                cur_degs[node] = deg-1          # decrement cur_deg because it has another touched neighbor
+
+                
+        return top_order
+
+#### This function creates a DAG by orienting the edges according to "ordering", which is a permutation
+#### of the vertices. 
+
+    def Orient(self,ordering):
+        output = DAG()          # Creating empty output graph
+        counter = 1
+        for node in ordering:   # Loop over nodes
+            output.vertices.add(node)   # First add node to vertices in output
+            output.top_order_inv[node] = counter    # Setting inverse of topological ordering
+            counter += 1
+            output.adj_list[node] = set()  # Set up empty adjacency and in lists
+            output.in_list[node] = set()
+            output.degrees[node] = 0
+            output.indegrees[node] = 0
+            for nbr in self.adj_list[node]: # For every neighbor nbr of node
+                if nbr in output.vertices: # Determine which is higher in order. If nbr already in output.vertices, then nbr is lower. 
+                    output.in_list[node].add(nbr)  # If nbr is lower, then nbr is in-neighbor.
+                    output.indegrees[node] += 1       # Update degree of nbr accordingly. 
+                else:
+                    output.adj_list[node].add(nbr) # If nbr is higher, nbr is out neighbor.
+                    output.degrees[node] += 1         # Update degree of nbr accordingly.          
+        
+        output.top_order = ordering         # Topological ordering is as given by input
+        return output 
+                
+
 
 
 #### The DAG class is inherited from the graph class, and the only difference is an additional topological ordering.
@@ -334,6 +411,9 @@ class DAG(graph):
     def __init__(self):
         super(DAG,self).__init__()
         DAG.top_order = []
+        DAG.top_order_inv = dict()
+        DAG.in_list = dict()            # Optional in-neighbor list. adj_list only maintains out neighbors
+        DAG.indegrees = dict()          # Optional indegrees
 
     def Output(self,fname):
         f_output = open(fname,'w')
