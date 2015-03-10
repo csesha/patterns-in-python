@@ -32,4 +32,6 @@ g_count = triangle_counters.wedge_enum(G)        # Perform wedge enumeration on 
 #print('Wedge enumeration time: ' + str(end-start))
 print('Running wedge enumeration on G, triangle count =',g_count)
 g_count = eigen_triangle_count.eigen_val(G)
-print('Running eigen val computation on G, triangle count =',g_count)
+print('Running eigen value computation on G, triangle count =',g_count)
+g_count = eigen_triangle_count.trace_triangle_count(G)
+print('Running trace triangle computation on G, triangle count =',g_count)
